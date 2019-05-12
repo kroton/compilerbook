@@ -17,6 +17,7 @@ enum {
   TK_EQ,        // ==
   TK_NE,        // !=
   TK_LE,        // <=
+  TK_GE,        // >=
   TK_EOF,       // 入力終わりを表すトークン
 };
 
@@ -60,6 +61,15 @@ void tokenize(char *p) {
       p += 2;
       continue;
     }
+
+    if (strncmp(p, ">=", 2) == 0) {
+      tokens[i].ty = TK_GE;
+      tokens[i].input = p;
+      i++;
+      p += 2;
+      continue;
+    }
+
 
     if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')' || *p == '<' || *p == '>') {
       tokens[i].ty = *p;
@@ -149,6 +159,8 @@ Node *relational() {
       node = new_node(TK_LE, node, add());
     } else if (consume('>')) {
       node = new_node('>', node, add());
+    } else if (consume(TK_GE)) {
+      node = new_node(TK_GE, node, add());
     } else {
       return node;
     }
@@ -260,6 +272,11 @@ void gen(Node *node) {
   case '>':
     printf("  cmp rax, rdi\n");
     printf("  setg al\n");
+    printf("  movzb rax, al\n");
+    break;
+  case TK_GE:
+    printf("  cmp rax, rdi\n");
+    printf("  setge al\n");
     printf("  movzb rax, al\n");
     break;
   }
