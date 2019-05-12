@@ -18,6 +18,16 @@ typedef struct {
 
 Vector *new_vector();
 void vec_push(Vector *, void *);
+
+typedef struct {
+  Vector *keys;
+  Vector *vals;
+} Map;
+
+Map *new_map();
+void map_put(Map *, char *, void *);
+void *map_get(Map *, char *);
+
 void runtest();
 
 // parse
