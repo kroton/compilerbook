@@ -44,6 +44,7 @@ enum {
 typedef struct {
   int ty;      // トークンの型
   int val;     // tyがTK_NUMの場合、その数値
+  int offset;  // tyがTK_IDENTの場合、そのオフセット
   char *input; // トークン文字列(エラーメッセージ用)
 } Token;
 
@@ -62,7 +63,7 @@ typedef struct Node {
   struct Node* lhs; // 左辺
   struct Node* rhs; // 右辺
   int val;          // tyがND_NUMの場合のみ使う
-  char name;        // tyがND_IDENTの場合のみ使う
+  int offset;       // tyがND_IDENTの場合のみ使う
 } Node;
 
 void tokenize();

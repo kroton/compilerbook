@@ -19,7 +19,8 @@ int main(int argc, char **argv) {
     return 0;
   }
 
-  tokenize(argv[1]);
+  int idents = 0;
+  tokenize(argv[1], &idents);
   Vector* code = program();
 
   printf(".intel_syntax noprefix\n");
@@ -28,7 +29,7 @@ int main(int argc, char **argv) {
 
   printf("  push rbp\n");
   printf("  mov rbp, rsp\n");
-  printf("  sub rsp, 208\n");
+  printf("  sub rsp, %d\n", idents * 8);
 
   for (int i = 0; i < code->len; i++) {
     gen(code->data[i]);

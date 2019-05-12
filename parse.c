@@ -32,9 +32,17 @@ int is_alnum(char c) {
          (c == '_');
 }
 
-void tokenize(char *p) {
+char *dup_ident_name(char *p) {
+  char *q = p;
+  while (*q && is_alnum(*q)) ++q;
+  return strndup(p, q - p);
+}
+
+void tokenize(char *p, int *idents) {
   tokens = new_vector();
 
+  *idents = 0;
+  Map *ident_offsets = new_map();
   while (*p) {
     if (isspace(*p)) {
       p++;
@@ -51,9 +59,15 @@ void tokenize(char *p) {
     }
 
     if ('a' <= *p && *p <= 'z') {
+      char *name = dup_ident_name(p);
+      if (map_get(ident_offsets, name) == NULL) {
+        int offset = ++(*idents);
+        map_put(ident_offsets, name, (void *)offset);
+      }
       token->ty = TK_IDENT;
+      token->offset = (long) map_get(ident_offsets, name);
       token->input = p;
-      p++;
+      p += strlen(name);
       continue;
     }
 
@@ -126,10 +140,10 @@ Node *new_node_num(int val) {
   return node;
 }
 
-Node *new_node_ident(char name) {
+Node *new_node_ident(int offset) {
   Node *node = malloc(sizeof(Node));
   node->ty = ND_IDENT;
-  node->name = name;
+  node->offset = offset;
   return node;
 }
 
@@ -261,7 +275,7 @@ Node *term() {
 
   if (token->ty == TK_IDENT) {
     next_token();
-    return new_node_ident(*token->input);
+    return new_node_ident(token->offset);
   }
 
   error("数値でも開きカッコでも変数でもないトークンです: %s", 
