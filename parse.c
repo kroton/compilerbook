@@ -264,6 +264,6 @@ Node *term() {
     return new_node_ident(*token->input);
   }
 
-  error("数値でも開きカッコでもないトークンです: %s", 
+  error("数値でも開きカッコでも変数でもないトークンです: %s", 
         token->input);
 }
