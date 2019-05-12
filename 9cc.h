@@ -23,6 +23,7 @@ void runtest();
 // parse
 enum {
   TK_NUM = 256, // 整数トークン
+  TK_IDENT,     // 識別子
   TK_EQ,        // ==
   TK_NE,        // !=
   TK_LE,        // <=
@@ -38,6 +39,7 @@ typedef struct {
 
 enum {
   ND_NUM = 256, // 整数のノードの型
+  ND_IDENT,     // 識別子のノードの型
 };
 
 typedef struct Node {
@@ -45,10 +47,11 @@ typedef struct Node {
   struct Node* lhs; // 左辺
   struct Node* rhs; // 右辺
   int val;          // tyがND_NUMの場合のみ使う
+  char name;        // tyがND_IDENTの場合のみ使う
 } Node;
 
 void tokenize();
-Node* equality();
+Vector* program();
 
 // codegen
 void gen(Node *node);

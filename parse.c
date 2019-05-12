@@ -24,6 +24,13 @@ void tokenize(char *p) {
 
     Token *token = new_token();
 
+    if ('a' <= *p && *p <= 'z') {
+      token->ty = TK_IDENT;
+      token->input = p;
+      p++;
+      continue;
+    }
+
     if (strncmp(p, "==", 2) == 0) {
       token->ty = TK_EQ;
       token->input = p;
@@ -52,7 +59,7 @@ void tokenize(char *p) {
       continue;
     }
 
-    if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')' || *p == '<' || *p == '>') {
+    if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')' || *p == '<' || *p == '>' || *p == '=' || *p == ';') {
       token->ty = *p;
       token->input = p;
       p++;
@@ -97,12 +104,45 @@ Node *new_node_num(int val) {
   return node;
 }
 
+Node *new_node_ident(char name) {
+  Node *node = malloc(sizeof(Node));
+  node->ty = ND_IDENT;
+  node->name = name;
+  return node;
+}
+
+Node *stmt();
+Node *assign();
 Node *equality();
 Node *relational();
 Node *add();
 Node *term();
 Node *unary();
 Node *mul();
+
+Vector* program() {
+  Vector *code = new_vector();
+  while (get_token(pos)->ty != TK_EOF) {
+    vec_push(code, stmt());
+  }
+  return code;
+}
+
+Node *stmt() {
+  Node *node = assign();
+  if (!consume(';')) {
+    error("';'ではないトークンです: %s", get_token(pos)->input);
+  }
+  return node;
+}
+
+Node *assign() {
+  Node *node = equality();
+  if (consume('=')) {
+    node = new_node('=', node, assign());
+  }
+  return node;
+}
 
 Node *equality() {
   Node *node = relational();
@@ -178,7 +218,7 @@ Node *term() {
   Token *token = get_token(pos);
 
   if (consume('(')) {
-    Node *node = equality();
+    Node *node = assign();
     if (!consume(')')) {
       error("開きカッコに対応する閉じカッコがありません: %s",
             token->input);
@@ -189,6 +229,11 @@ Node *term() {
   if (token->ty == TK_NUM) {
     ++pos;
     return new_node_num(token->val);
+  }
+
+  if (token->ty == TK_IDENT) {
+    ++pos;
+    return new_node_ident(*token->input);
   }
 
   error("数値でも開きカッコでもないトークンです: %s", 
