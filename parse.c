@@ -21,6 +21,10 @@ void next_token() {
   ++pos;
 }
 
+int has_current_token() {
+  return pos < tokens->len;
+}
+
 int is_alnum(char c) {
   return ('a' <= c && c <= 'z') || 
          ('A' <= c && c <= 'Z') || 
@@ -98,10 +102,6 @@ void tokenize(char *p) {
     error("トークナイズできません: %s", p);
     exit(1);
   }
-
-  Token *token = new_token();
-  token->ty = TK_EOF;
-  token->input = p;
 }
 
 int consume(int ty) {
@@ -144,7 +144,7 @@ Node *mul();
 
 Vector* program() {
   Vector *code = new_vector();
-  while (get_current_token()->ty != TK_EOF) {
+  while (has_current_token()) {
     vec_push(code, stmt());
   }
   return code;

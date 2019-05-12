@@ -29,7 +29,6 @@ enum {
   TK_NE,        // !=
   TK_LE,        // <=
   TK_GE,        // >=
-  TK_EOF,       // 入力終わりを表すトークン
 };
 
 typedef struct {
