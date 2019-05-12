@@ -34,7 +34,7 @@ void tokenize(char *p) {
       continue;
     }
 
-    if (*p == '+' || *p == '-' || *p == '*') {
+    if (*p == '+' || *p == '-' || *p == '*' || *p == '/') {
       tokens[i].ty = *p;
       tokens[i].input = p;
       i++;
@@ -117,6 +117,8 @@ Node *mul() {
   for (;;) {
     if (consume('*')) {
       node = new_node('*', node, mul());
+    } else if (consume('/')) {
+      node = new_node('/', node, mul());
     } else {
       return node;
     }
@@ -144,6 +146,10 @@ void gen(Node *node) {
     break;
   case '*':
     printf("  mul rdi\n");
+    break;
+  case '/':
+    printf("  mov rdx, 0\n");
+    printf("  div rdi\n");
     break;
   }
 
