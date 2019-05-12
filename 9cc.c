@@ -74,63 +74,69 @@ typedef struct {
   char *input; // トークン文字列(エラーメッセージ用)
 } Token;
 
-Token tokens[100];
+Vector* tokens;
 int pos;
 
+Token *new_token() {
+  Token *token = malloc(sizeof(Token));
+  vec_push(tokens, token);
+  return token;
+}
+
+Token *get_token(int pos) {
+  return tokens->data[pos];
+}
+
 void tokenize(char *p) {
-  int i = 0;
+  tokens = new_vector();
+
   while (*p) {
     if (isspace(*p)) {
       p++;
       continue;
     }
 
+    Token *token = new_token();
+
     if (strncmp(p, "==", 2) == 0) {
-      tokens[i].ty = TK_EQ;
-      tokens[i].input = p;
-      i++;
+      token->ty = TK_EQ;
+      token->input = p;
       p += 2;
       continue;
     }
 
     if (strncmp(p, "!=", 2) == 0) {
-      tokens[i].ty = TK_NE;
-      tokens[i].input = p;
-      i++;
+      token->ty = TK_NE;
+      token->input = p;
       p += 2;
       continue;
     }
 
     if (strncmp(p, "<=", 2) == 0) {
-      tokens[i].ty = TK_LE;
-      tokens[i].input = p;
-      i++;
+      token->ty = TK_LE;
+      token->input = p;
       p += 2;
       continue;
     }
 
     if (strncmp(p, ">=", 2) == 0) {
-      tokens[i].ty = TK_GE;
-      tokens[i].input = p;
-      i++;
+      token->ty = TK_GE;
+      token->input = p;
       p += 2;
       continue;
     }
 
-
     if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')' || *p == '<' || *p == '>') {
-      tokens[i].ty = *p;
-      tokens[i].input = p;
-      i++;
+      token->ty = *p;
+      token->input = p;
       p++;
       continue;
     }
 
     if (isdigit(*p)) {
-      tokens[i].ty = TK_NUM;
-      tokens[i].input = p;
-      tokens[i].val = strtol(p, &p, 10);
-      i++;
+      token->ty = TK_NUM;
+      token->input = p;
+      token->val = strtol(p, &p, 10);
       continue;
     }
 
@@ -138,12 +144,13 @@ void tokenize(char *p) {
     exit(1);
   }
 
-  tokens[i].ty = TK_EOF;
-  tokens[i].input = p;
+  Token *token = new_token();
+  token->ty = TK_EOF;
+  token->input = p;
 }
 
 int consume(int ty) {
-  if (tokens[pos].ty != ty)
+  if (get_token(pos)->ty != ty)
     return 0;
   pos++;
   return 1;
@@ -253,21 +260,24 @@ Node *unary() {
 }
 
 Node *term() {
+  Token *token = get_token(pos);
+
   if (consume('(')) {
     Node *node = equality();
     if (!consume(')')) {
       error("開きカッコに対応する閉じカッコがありません: %s",
-            tokens[pos].input);
+            token->input);
     }
     return node;
   }
 
-  if (tokens[pos].ty == TK_NUM) {
-    return new_node_num(tokens[pos++].val);
+  if (token->ty == TK_NUM) {
+    ++pos;
+    return new_node_num(token->val);
   }
 
   error("数値でも開きカッコでもないトークンです: %s", 
-        tokens[pos].input);
+        token->input);
 }
 
 void gen(Node *node) {
