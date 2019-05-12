@@ -13,6 +13,14 @@ Token *get_token(int pos) {
   return tokens->data[pos];
 }
 
+Token *get_current_token() {
+  return get_token(pos);
+}
+
+void next_token() {
+  ++pos;
+}
+
 void tokenize(char *p) {
   tokens = new_vector();
 
@@ -83,9 +91,9 @@ void tokenize(char *p) {
 }
 
 int consume(int ty) {
-  if (get_token(pos)->ty != ty)
+  if (get_current_token()->ty != ty)
     return 0;
-  pos++;
+  next_token();
   return 1;
 }
 
@@ -122,7 +130,7 @@ Node *mul();
 
 Vector* program() {
   Vector *code = new_vector();
-  while (get_token(pos)->ty != TK_EOF) {
+  while (get_current_token()->ty != TK_EOF) {
     vec_push(code, stmt());
   }
   return code;
@@ -131,7 +139,7 @@ Vector* program() {
 Node *stmt() {
   Node *node = assign();
   if (!consume(';')) {
-    error("';'ではないトークンです: %s", get_token(pos)->input);
+    error("';'ではないトークンです: %s", get_current_token()->input);
   }
   return node;
 }
@@ -215,7 +223,7 @@ Node *unary() {
 }
 
 Node *term() {
-  Token *token = get_token(pos);
+  Token *token = get_current_token();
 
   if (consume('(')) {
     Node *node = assign();
@@ -227,12 +235,12 @@ Node *term() {
   }
 
   if (token->ty == TK_NUM) {
-    ++pos;
+    next_token();
     return new_node_num(token->val);
   }
 
   if (token->ty == TK_IDENT) {
-    ++pos;
+    next_token();
     return new_node_ident(*token->input);
   }
 
