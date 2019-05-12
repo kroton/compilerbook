@@ -21,7 +21,7 @@ void next_token() {
   ++pos;
 }
 
-int has_current_token() {
+int has_token() {
   return pos < tokens->len;
 }
 
@@ -144,7 +144,7 @@ Node *mul();
 
 Vector* program() {
   Vector *code = new_vector();
-  while (has_current_token()) {
+  while (has_token()) {
     vec_push(code, stmt());
   }
   return code;
