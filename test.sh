@@ -52,5 +52,8 @@ try 0 "3>1+1==0;"
 try 1 "3>1+1==1;"
 try 8 "a=2;b=3;c=a*(1+b);c;"
 try 20 "a=2;b=3;c=a*(1+(a*b));a+b+c+1;"
+try 2 "return 2;"
+try 5 "return 5; return 8;"
+try 14 "a = 3; b = 5 * 6 - 8; return a + b / 2;"
 
 echo OK
