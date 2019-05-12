@@ -91,6 +91,7 @@ Node *new_node_num(int val) {
   return node;
 }
 
+Node *term();
 Node *mul();
 
 Node *add() {
@@ -98,9 +99,9 @@ Node *add() {
 
   for (;;) {
     if (consume('+')) {
-      node = new_node('+', node, add());
+      node = new_node('+', node, mul());
     } else if (consume('-')) {
-      node = new_node('-', node, add());
+      node = new_node('-', node, mul());
     } else {
       return node;
     }
@@ -108,21 +109,25 @@ Node *add() {
 }
 
 Node *mul() {
-  if (tokens[pos].ty != TK_NUM) {
-    error("最初の項が数ではありません");
-  }
-
-  Node *node = new_node_num(tokens[pos++].val);
+  Node *node = term();
 
   for (;;) {
     if (consume('*')) {
-      node = new_node('*', node, mul());
+      node = new_node('*', node, term());
     } else if (consume('/')) {
-      node = new_node('/', node, mul());
+      node = new_node('/', node, term());
     } else {
       return node;
     }
   }
+}
+
+Node *term() {
+  if (tokens[pos].ty == TK_NUM) {
+    return new_node_num(tokens[pos++].val);
+  }
+
+  error("数値ではありません: %s", tokens[pos].input);
 }
 
 void gen(Node *node) {
