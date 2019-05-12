@@ -14,6 +14,7 @@ void error(char *fmt, ...) {
 
 enum {
   TK_NUM = 256, // 整数トークン
+  TK_EQ,        // ==
   TK_EOF,       // 入力終わりを表すトークン
 };
 
@@ -31,6 +32,14 @@ void tokenize(char *p) {
   while (*p) {
     if (isspace(*p)) {
       p++;
+      continue;
+    }
+
+    if (strncmp(p, "==", 2) == 0) {
+      tokens[i].ty = TK_EQ;
+      tokens[i].input = p;
+      i++;
+      p += 2;
       continue;
     }
 
@@ -91,9 +100,29 @@ Node *new_node_num(int val) {
   return node;
 }
 
+Node *equality();
+Node *relational();
+Node *add();
 Node *term();
 Node *unary();
 Node *mul();
+
+Node *equality() {
+  Node *node = relational();
+
+  for (;;) {
+    if (consume(TK_EQ)) {
+      node = new_node(TK_EQ, node, relational());
+    } else {
+      return node;
+    }
+  }
+}
+
+Node *relational() {
+  Node *node = add();
+  return node;
+}
 
 Node *add() {
   Node *node = mul();
@@ -135,7 +164,7 @@ Node *unary() {
 
 Node *term() {
   if (consume('(')) {
-    Node *node = add();
+    Node *node = equality();
     if (!consume(')')) {
       error("開きカッコに対応する閉じカッコがありません: %s",
             tokens[pos].input);
@@ -177,6 +206,11 @@ void gen(Node *node) {
     printf("  mov rdx, 0\n");
     printf("  div rdi\n");
     break;
+  case TK_EQ:
+    printf("  cmp rax, rdi\n");
+    printf("  sete al\n");
+    printf("  movzb rax, al\n");
+    break;
   }
 
   printf("  push rax\n");
@@ -188,7 +222,7 @@ int main(int argc, char **argv) {
     return 1;
   }
   tokenize(argv[1]);
-  Node *node = add();
+  Node *node = equality();
 
   printf(".intel_syntax noprefix\n");
   printf(".global main\n");
