@@ -42,6 +42,10 @@ enum {
   ND_NUM = 256, // 整数のノードの型
   ND_IDENT,     // 識別子のノードの型
   ND_RETURN,    // return
+  ND_EQ,        // ==
+  ND_NE,        // !=
+  ND_LE,        // <=
+  ND_GE,        // >=
 };
 
 typedef struct Node {
