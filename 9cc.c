@@ -16,6 +16,7 @@ enum {
   TK_NUM = 256, // 整数トークン
   TK_EQ,        // ==
   TK_NE,        // !=
+  TK_LE,        // <=
   TK_EOF,       // 入力終わりを表すトークン
 };
 
@@ -46,6 +47,14 @@ void tokenize(char *p) {
 
     if (strncmp(p, "!=", 2) == 0) {
       tokens[i].ty = TK_NE;
+      tokens[i].input = p;
+      i++;
+      p += 2;
+      continue;
+    }
+
+    if (strncmp(p, "<=", 2) == 0) {
+      tokens[i].ty = TK_LE;
       tokens[i].input = p;
       i++;
       p += 2;
@@ -136,6 +145,8 @@ Node *relational() {
   for (;;) {
     if (consume('<')) {
       node = new_node('<', node, add());
+    } else if (consume(TK_LE)) {
+      node = new_node(TK_LE, node, add());
     } else {
       return node;
     }
@@ -237,6 +248,11 @@ void gen(Node *node) {
   case '<':
     printf("  cmp rax, rdi\n");
     printf("  setl al\n");
+    printf("  movzb rax, al\n");
+    break;
+  case TK_LE:
+    printf("  cmp rax, rdi\n");
+    printf("  setle al\n");
     printf("  movzb rax, al\n");
     break;
   }
