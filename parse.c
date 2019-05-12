@@ -147,6 +147,13 @@ Node *new_node_ident(int offset) {
   return node;
 }
 
+Node *new_node_return(Node *lhs) {
+  Node *node = malloc(sizeof(Node));
+  node->ty = ND_RETURN;
+  node->lhs = lhs;
+  return node;
+}
+
 Node *stmt();
 Node *assign();
 Node *equality();
@@ -168,7 +175,7 @@ Node *stmt() {
   Node *node;
 
   if (consume(TK_RETURN)) {
-    node = new_node(ND_RETURN, assign(), NULL);
+    node = new_node_return(assign());
   } else {
     node = assign();
   }
