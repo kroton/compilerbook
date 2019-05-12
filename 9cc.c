@@ -34,7 +34,7 @@ void tokenize(char *p) {
       continue;
     }
 
-    if (*p == '+' || *p == '-' || *p == '*' || *p == '/') {
+    if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')') {
       tokens[i].ty = *p;
       tokens[i].input = p;
       i++;
@@ -123,11 +123,21 @@ Node *mul() {
 }
 
 Node *term() {
+  if (consume('(')) {
+    Node *node = add();
+    if (!consume(')')) {
+      error("開きカッコに対応する閉じカッコがありません: %s",
+            tokens[pos].input);
+    }
+    return node;
+  }
+
   if (tokens[pos].ty == TK_NUM) {
     return new_node_num(tokens[pos++].val);
   }
 
-  error("数値ではありません: %s", tokens[pos].input);
+  error("数値でも開きカッコでもないトークンです: %s", 
+        tokens[pos].input);
 }
 
 void gen(Node *node) {
