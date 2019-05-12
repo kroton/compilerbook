@@ -59,7 +59,7 @@ enum {
 };
 
 typedef struct Node {
-  int ty;           // 演算子かND_NUM
+  int ty;           // ノードの型
   struct Node* lhs; // 左辺
   struct Node* rhs; // 右辺
   int val;          // tyがND_NUMの場合のみ使う
