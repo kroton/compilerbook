@@ -52,7 +52,7 @@ void tokenize(char *p) {
       continue;
     }
 
-    if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')') {
+    if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')' || *p == '<') {
       tokens[i].ty = *p;
       tokens[i].input = p;
       i++;
@@ -132,7 +132,14 @@ Node *equality() {
 
 Node *relational() {
   Node *node = add();
-  return node;
+
+  for (;;) {
+    if (consume('<')) {
+      node = new_node('<', node, add());
+    } else {
+      return node;
+    }
+  }
 }
 
 Node *add() {
@@ -225,6 +232,11 @@ void gen(Node *node) {
   case TK_NE:
     printf("  cmp rax, rdi\n");
     printf("  setne al\n");
+    printf("  movzb rax, al\n");
+    break;
+  case '<':
+    printf("  cmp rax, rdi\n");
+    printf("  setl al\n");
     printf("  movzb rax, al\n");
     break;
   }
