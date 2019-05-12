@@ -34,7 +34,7 @@ void tokenize(char *p) {
       continue;
     }
 
-    if (*p == '+' || *p == '-') {
+    if (*p == '+' || *p == '-' || *p == '*') {
       tokens[i].ty = *p;
       tokens[i].input = p;
       i++;
@@ -91,7 +91,23 @@ Node *new_node_num(int val) {
   return node;
 }
 
+Node *mul();
+
 Node *add() {
+  Node *node = mul();
+
+  for (;;) {
+    if (consume('+')) {
+      node = new_node('+', node, add());
+    } else if (consume('-')) {
+      node = new_node('-', node, add());
+    } else {
+      return node;
+    }
+  }
+}
+
+Node *mul() {
   if (tokens[pos].ty != TK_NUM) {
     error("最初の項が数ではありません");
   }
@@ -99,10 +115,8 @@ Node *add() {
   Node *node = new_node_num(tokens[pos++].val);
 
   for (;;) {
-    if (consume('+')) {
-      node = new_node('+', node, add());
-    } else if (consume('-')) {
-      node = new_node('-', node, add());
+    if (consume('*')) {
+      node = new_node('*', node, mul());
     } else {
       return node;
     }
@@ -127,6 +141,9 @@ void gen(Node *node) {
     break;
   case '-':
     printf("  sub rax, rdi\n");
+    break;
+  case '*':
+    printf("  mul rdi\n");
     break;
   }
 
